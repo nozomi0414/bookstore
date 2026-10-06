@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.bookstore.BookCategories;
 import com.bookstore.entity.Book;
 import com.bookstore.repository.BookRepository;
 
@@ -29,6 +30,9 @@ public class BookService {
 	public Book create(Book book) {
 		if (book.getPrice() == null || book.getPrice() < 0) {
 			throw new IllegalArgumentException("Price must be 0 or greater");
+		}
+		if (book.getCategory() == null || !BookCategories.NAMES.contains(book.getCategory())) {
+			throw new IllegalArgumentException("分類不在允許的清單裡");
 		}
 		return bookRepository.save(book);
 	}

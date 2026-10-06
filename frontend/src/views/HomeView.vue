@@ -1,6 +1,7 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api } from '@/api/client'
+import { categories } from '@/constants/categories'
 import { useCart } from '@/composables/useCart'
 
 const books = ref([])
@@ -9,12 +10,9 @@ const loading = ref(true)
 const brokenCovers = ref({})
 const selected = ref('全部')
 const justAdded = ref(null)
+const detail = ref(null)
+const closeButton = ref(null)
 const { items, addBook } = useCart()
-
-const categories = computed(() => {
-  const names = books.value.map((book) => book.category || '未分類')
-  return [...new Set(names)]
-})
 
 const visibleBooks = computed(() => {
   if (selected.value === '全部') return books.value
@@ -22,6 +20,7 @@ const visibleBooks = computed(() => {
 })
 
 onMounted(async () => {
+  window.addEventListener('keydown', onKeydown)
   try {
     books.value = await api('/api/books')
   } catch (e) {
@@ -63,6 +62,34 @@ function add(book) {
     if (justAdded.value === book.id) justAdded.value = null
   }, 1200)
 }
+
+function field(value) {
+  const text = value == null ? '' : String(value).trim()
+  return text || '尚未填寫'
+}
+
+async function openDetail(book) {
+  detail.value = book
+  await nextTick()
+  closeButton.value?.focus()
+}
+
+function closeDetail() {
+  detail.value = null
+}
+
+function onKeydown(event) {
+  if (event.key === 'Escape' && detail.value) closeDetail()
+}
+
+watch(detail, (book) => {
+  document.body.style.overflow = book ? 'hidden' : ''
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown)
+  document.body.style.overflow = ''
+})
 </script>
 
 <template>
@@ -105,6 +132,12 @@ function add(book) {
 
       <ul v-else class="books">
         <li v-for="book in visibleBooks" :key="book.id" class="book">
+          <button
+            type="button"
+            class="card-hit"
+            :aria-label="`查看${book.title}的詳細資訊`"
+            @click="openDetail(book)"
+          ></button>
           <div class="cover-wrap">
             <img
               v-if="showCover(book)"
@@ -140,13 +173,73 @@ function add(book) {
         </li>
       </ul>
     </section>
+
+    <Teleport to="body">
+      <div v-if="detail" class="backdrop" @click.self="closeDetail">
+        <article
+          class="dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="book-detail-title"
+        >
+          <button ref="closeButton" type="button" class="close" @click="closeDetail">關閉</button>
+          <div class="detail-cover">
+            <img
+              v-if="showCover(detail)"
+              class="cover"
+              :src="detail.coverImageUrl"
+              :alt="detail.title"
+              @error="coverFailed(detail.id)"
+            />
+            <div
+              v-else
+              class="cover placeholder"
+              :style="{ '--tone': coverTone(detail.title) }"
+              aria-hidden="true"
+            >
+              <span>{{ detail.title }}</span>
+            </div>
+          </div>
+          <div class="detail-body">
+            <p v-if="detail.category" class="category">{{ detail.category }}</p>
+            <h2 id="book-detail-title">{{ detail.title }}</h2>
+            <p class="author">{{ detail.author || '作者未填' }}</p>
+            <p class="description">{{ field(detail.description) }}</p>
+            <dl class="facts">
+              <div>
+                <dt>出版社</dt>
+                <dd>{{ field(detail.publisher) }}</dd>
+              </div>
+              <div>
+                <dt>ISBN</dt>
+                <dd>{{ field(detail.isbn) }}</dd>
+              </div>
+              <div>
+                <dt>庫存</dt>
+                <dd>{{ detail.stock == null ? '尚未填寫' : detail.stock }}</dd>
+              </div>
+            </dl>
+            <p class="price detail-price">{{ formatPrice(detail.price) }}</p>
+            <button type="button" class="add detail-add" :disabled="atStockLimit(detail)" @click="add(detail)">
+              {{
+                atStockLimit(detail)
+                  ? '已達庫存'
+                  : justAdded === detail.id
+                    ? '已加入購物車'
+                    : '加入購物車'
+              }}
+            </button>
+          </div>
+        </article>
+      </div>
+    </Teleport>
   </main>
 </template>
 
 <style scoped>
 .catalog {
   display: grid;
-  grid-template-columns: 11.5rem 1fr;
+  grid-template-columns: 14.5rem 1fr;
   gap: 2.5rem;
   align-items: start;
   padding-top: 1.5rem;
@@ -167,24 +260,25 @@ function add(book) {
 .tags {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.4rem;
-  margin-top: 0.85rem;
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--line);
 }
 
 .tags button {
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: 0.35rem 0.8rem;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 0.55rem 0.1rem;
   background: transparent;
-  color: var(--muted);
+  color: var(--ink);
   cursor: pointer;
+  font-size: 0.92rem;
+  text-align: left;
 }
 
 .tags button.active {
-  border-color: var(--line);
-  background: var(--bg-elevated);
-  color: var(--ink);
+  color: var(--accent);
   font-weight: 700;
 }
 
@@ -219,6 +313,7 @@ h1 {
 }
 
 .book {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -228,22 +323,42 @@ h1 {
   box-shadow: var(--shadow);
 }
 
-.cover-wrap {
+.book:has(.card-hit:focus-visible) {
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow);
+}
+
+.card-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.cover-wrap,
+.detail-cover {
+  position: relative;
+  width: 100%;
   aspect-ratio: 3 / 4;
+  overflow: hidden;
   background: var(--line);
+  flex-shrink: 0;
 }
 
 .cover {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center top;
 }
 
 .placeholder {
   display: flex;
   align-items: flex-end;
-  height: 100%;
   padding: 1rem;
   background: linear-gradient(165deg, hsl(var(--tone) 38% 46%), hsl(var(--tone) 32% 22%));
   color: #fffdf8;
@@ -302,15 +417,108 @@ h2 {
 }
 
 .add {
+  position: relative;
+  z-index: 2;
   margin-top: 0.85rem;
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0.5rem 0.75rem;
-  background: transparent;
+  background: var(--bg-elevated);
   color: var(--ink);
   cursor: pointer;
   font-weight: 700;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(28, 25, 21, 0.46);
+}
+
+.dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 1.5rem;
+  width: min(720px, 100%);
+  max-height: min(90vh, 820px);
+  overflow: auto;
+  padding: 1.35rem;
+  border-radius: 20px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow);
+}
+
+.detail-cover {
+  width: 220px;
+}
+
+.close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 1;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.detail-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-right: 3rem;
+}
+
+.detail-body h2 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.description {
+  margin-top: 0.85rem;
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+.facts {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.1rem;
+}
+
+.facts div {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  overflow-wrap: anywhere;
+}
+
+.detail-price {
+  margin-top: 1.15rem;
+  font-size: 1.15rem;
+}
+
+.detail-add {
+  align-self: flex-start;
+  width: auto;
+  min-width: 9rem;
+  padding-inline: 1.1rem;
 }
 
 .add:disabled {
@@ -331,6 +539,22 @@ h2 {
   .tags {
     flex-direction: row;
     overflow-x: auto;
+    border-top: 0;
+  }
+
+  .tags button {
+    width: auto;
+    white-space: nowrap;
+    border-bottom: 0;
+  }
+
+  .dialog {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-cover {
+    width: min(220px, 70%);
+    margin-inline: auto;
   }
 }
 </style>

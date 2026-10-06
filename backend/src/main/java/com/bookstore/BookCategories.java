@@ -1,0 +1,33 @@
+package com.bookstore;
+
+import java.util.List;
+
+public final class BookCategories {
+
+	public static final List<String> NAMES = List.of(
+			"文學",
+			"財經企管",
+			"生活風格",
+			"飲食料理",
+			"心理勵志",
+			"醫療保健",
+			"旅遊",
+			"宗教命理",
+			"教育/親子教養",
+			"童書/青少年",
+			"羅曼史",
+			"輕小說",
+			"漫畫",
+			"語言/字辭典",
+			"藝術設計",
+			"電腦資訊",
+			"自然科普",
+			"人文歷史",
+			"社會哲思",
+			"考試書/政府出版品",
+			"參考書"
+	);
+
+	private BookCategories() {
+	}
+}
