@@ -15,13 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.bookstore.dto.UserResponse;
 import com.bookstore.dto.LoginRequest;
 import com.bookstore.dto.LoginResponse;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import org.springframework.beans.factory.annotation.Value;
-import com.bookstore.service.JwtService;
-
 
 @Service
 @RequiredArgsConstructor

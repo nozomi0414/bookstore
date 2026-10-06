@@ -1,5 +1,7 @@
 package com.bookstore.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -23,6 +25,7 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
@@ -35,5 +38,5 @@ public class OrderItem {
 
     private int unitPrice;
 
-    private int title;
+    private String title;
 }

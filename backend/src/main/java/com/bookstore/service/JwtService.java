@@ -8,7 +8,6 @@ import io.jsonwebtoken.security.Keys;
 import java.util.Date;
 import com.bookstore.entity.User;
 import org.springframework.beans.factory.annotation.Value;
-import io.jsonwebtoken.Jwts;
 
 @Service
 @RequiredArgsConstructor

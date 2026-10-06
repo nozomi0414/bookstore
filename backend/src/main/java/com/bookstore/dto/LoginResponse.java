@@ -1,5 +1,10 @@
 package com.bookstore.dto;
 
-public class LoginResponse {
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+public class LoginResponse {
+    private String token;
 }

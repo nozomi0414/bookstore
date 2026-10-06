@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import com.bookstore.entity.Order;
 import com.bookstore.service.OrderService;
 import lombok.RequiredArgsConstructor;

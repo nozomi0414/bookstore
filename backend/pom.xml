@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- JDK 21 搭配 compiler plugin 3.15 必須明確開啟，Lombok 才會產生 getter/setter -->
+		<maven.compiler.proc>full</maven.compiler.proc>
 	</properties>
 	<dependencies>
 		<dependency>	
