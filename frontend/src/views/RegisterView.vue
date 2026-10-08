@@ -11,6 +11,7 @@ const { setSession } = useAuth()
 const name = ref('')
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const error = ref('')
 const submitting = ref(false)
 
@@ -24,8 +25,12 @@ function nextPath() {
 
 async function submit() {
   error.value = ''
-  if (!name.value || !email.value || !password.value) {
-    error.value = '請填寫姓名、電子郵件和密碼'
+  if (!name.value || !email.value || !password.value || !confirmPassword.value) {
+    error.value = '請填寫姓名、電子郵件、密碼和確認密碼'
+    return
+  }
+  if (password.value !== confirmPassword.value) {
+    error.value = '兩次輸入的密碼不一致'
     return
   }
   submitting.value = true
@@ -64,6 +69,10 @@ async function submit() {
       <label>
         密碼
         <input v-model="password" type="password" autocomplete="new-password" />
+      </label>
+      <label>
+        確認密碼
+        <input v-model="confirmPassword" type="password" autocomplete="new-password" />
       </label>
       <p v-if="error" class="error">{{ error }}</p>
       <button type="submit" :disabled="submitting">{{ submitting ? '建立中…' : '建立帳號' }}</button>

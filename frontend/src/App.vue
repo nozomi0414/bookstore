@@ -8,8 +8,8 @@ const { count } = useCart()
 </script>
 
 <template>
-  <div class="shell">
-    <header class="topbar">
+  <header class="topbar">
+    <div class="topbar-inner">
       <RouterLink to="/" class="brand">書店</RouterLink>
       <nav class="nav">
         <RouterLink to="/cart">
@@ -20,31 +20,46 @@ const { count } = useCart()
         <RouterLink v-if="isLoggedIn" to="/account">帳號</RouterLink>
         <RouterLink v-else to="/login">登入</RouterLink>
       </nav>
-    </header>
+    </div>
+  </header>
+  <div class="shell">
     <RouterView />
   </div>
 </template>
 
 <style scoped>
 .shell {
-  width: min(1120px, calc(100% - 2rem));
+  width: min(1560px, calc(100% - 3rem));
   margin: 0 auto;
-  padding-bottom: 3.5rem;
+  padding-top: 5.75rem;
+  padding-bottom: 4rem;
 }
 
 .topbar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  background: #fffdfb;
+  border-bottom: 3px solid #f0c2b4;
+  box-shadow: 0 8px 24px rgba(120, 78, 52, 0.06);
+}
+
+.topbar-inner {
   display: flex;
   align-items: center;
   gap: 1rem;
-  min-height: 4.25rem;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(12px);
+  width: min(1560px, calc(100% - 3rem));
+  min-height: 4.5rem;
+  margin: 0 auto;
 }
 
 .brand {
+  padding: 0.15rem 0.75rem;
+  border-radius: 12px;
+  background: #f6d5cc;
+  color: #8d3d2c;
   font-family: var(--font-serif);
   font-size: 1.7rem;
   font-weight: 700;
@@ -54,7 +69,7 @@ const { count } = useCart()
 .nav {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.45rem;
   margin-left: auto;
 }
 
@@ -84,7 +99,11 @@ const { count } = useCart()
 }
 
 @media (max-width: 640px) {
-  .topbar {
+  .shell {
+    padding-top: 7.25rem;
+  }
+
+  .topbar-inner {
     flex-wrap: wrap;
     padding: 0.75rem 0;
   }

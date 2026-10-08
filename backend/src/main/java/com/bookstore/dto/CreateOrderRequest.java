@@ -10,4 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateOrderRequest {
     private List<OrderLineRequest> orderLines;
+    private String recipientName;
+    private String recipientPhone;
+    private String shippingAddress;
 }

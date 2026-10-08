@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api } from '@/api/client'
-import { categories } from '@/constants/categories'
+import { categories, categoryTones } from '@/constants/categories'
 import { useCart } from '@/composables/useCart'
 
 const books = ref([])
@@ -9,14 +9,39 @@ const error = ref('')
 const loading = ref(true)
 const brokenCovers = ref({})
 const selected = ref('全部')
+const query = ref('')
 const justAdded = ref(null)
 const detail = ref(null)
 const closeButton = ref(null)
 const { items, addBook } = useCart()
 
+const keyword = computed(() => query.value.trim())
+
 const visibleBooks = computed(() => {
-  if (selected.value === '全部') return books.value
-  return books.value.filter((book) => (book.category || '未分類') === selected.value)
+  const term = keyword.value.toLowerCase()
+  return books.value.filter((book) => {
+    const inCategory = selected.value === '全部' || (book.category || '未分類') === selected.value
+    if (!inCategory) return false
+    if (!term) return true
+    return [book.title, book.author].some((value) => (value || '').toLowerCase().includes(term))
+  })
+})
+
+const leadText = computed(() => {
+  if (books.value.length === 0) return '新書上架後會出現在這裡。'
+  const count = visibleBooks.value.length
+  return keyword.value ? `找到 ${count} 本` : `共 ${count} 本`
+})
+
+const pageTitle = computed(() => {
+  if (books.value.length === 0 && !loading.value && !error.value) return '書架還是空的'
+  return selected.value
+})
+
+const bannerStyle = computed(() => {
+  const tone = categoryTones[selected.value]
+  if (!tone) return undefined
+  return { background: tone.bg, color: tone.ink }
 })
 
 onMounted(async () => {
@@ -33,6 +58,12 @@ onMounted(async () => {
 function formatPrice(price) {
   if (price == null) return '價格未定'
   return `NT$ ${price.toLocaleString('zh-Hant')}`
+}
+
+function chipStyle(category) {
+  const tone = categoryTones[category]
+  if (!tone) return undefined
+  return { background: tone.bg, color: tone.ink }
 }
 
 function coverTone(title) {
@@ -105,6 +136,7 @@ onBeforeUnmount(() => {
           :key="category"
           type="button"
           :class="{ active: selected === category }"
+          :style="selected === category ? chipStyle(category) : undefined"
           @click="selected = category"
         >
           {{ category }}
@@ -113,22 +145,23 @@ onBeforeUnmount(() => {
     </aside>
 
     <section>
-      <header class="page-head">
-        <h1>{{ books.length === 0 && !loading && !error ? '書架還是空的' : '在架上的書' }}</h1>
-        <p v-if="!loading && !error" class="lead">
-          {{
-            books.length === 0
-              ? '新書上架後會出現在這裡。'
-              : selected === '全部'
-                ? `共 ${books.length} 本`
-                : `${selected} · ${visibleBooks.length} 本`
-          }}
-        </p>
+      <header class="page-head" :style="bannerStyle">
+        <h1>{{ pageTitle }}</h1>
+        <p v-if="!loading && !error" class="lead">{{ leadText }}</p>
+        <input
+          v-model="query"
+          class="search"
+          type="search"
+          placeholder="搜尋書名或作者"
+          aria-label="搜尋書名或作者"
+        />
       </header>
 
       <p v-if="loading" class="state">正在整理書架…</p>
       <p v-else-if="error" class="state error">{{ error }}</p>
-      <p v-else-if="visibleBooks.length === 0" class="state">這個分類目前沒有書</p>
+      <p v-else-if="visibleBooks.length === 0" class="state">
+        {{ keyword ? '找不到符合的書' : '這個分類目前沒有書' }}
+      </p>
 
       <ul v-else class="books">
         <li v-for="book in visibleBooks" :key="book.id" class="book">
@@ -157,7 +190,9 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="info">
-            <p v-if="book.category" class="category">{{ book.category }}</p>
+            <p v-if="book.category" class="category" :style="chipStyle(book.category)">
+              {{ book.category }}
+            </p>
             <h2>{{ book.title }}</h2>
             <p class="author">{{ book.author || '作者未填' }}</p>
             <div class="meta">
@@ -201,7 +236,9 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <div class="detail-body">
-            <p v-if="detail.category" class="category">{{ detail.category }}</p>
+            <p v-if="detail.category" class="category" :style="chipStyle(detail.category)">
+              {{ detail.category }}
+            </p>
             <h2 id="book-detail-title">{{ detail.title }}</h2>
             <p class="author">{{ detail.author || '作者未填' }}</p>
             <p class="description">{{ field(detail.description) }}</p>
@@ -239,20 +276,21 @@ onBeforeUnmount(() => {
 <style scoped>
 .catalog {
   display: grid;
-  grid-template-columns: 14.5rem 1fr;
-  gap: 2.5rem;
+  grid-template-columns: 15.625rem 1fr;
+  gap: 1.15rem;
   align-items: start;
-  padding-top: 1.5rem;
+  padding-top: 0.75rem;
 }
 
 .filters {
-  position: sticky;
-  top: 5rem;
+  padding: 1.44rem 1.25rem 1.56rem;
+  border-radius: 28px;
+  background: var(--panel);
 }
 
 .eyebrow {
   color: var(--accent);
-  font-size: 0.78rem;
+  font-size: 0.98rem;
   font-weight: 700;
   letter-spacing: 0.18em;
 }
@@ -260,35 +298,38 @@ onBeforeUnmount(() => {
 .tags {
   display: flex;
   flex-direction: column;
-  margin-top: 0.75rem;
-  border-top: 1px solid var(--line);
+  gap: 0.5rem;
+  margin-top: 1.13rem;
 }
 
 .tags button {
   width: 100%;
   border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  padding: 0.55rem 0.1rem;
-  background: transparent;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  background: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
   color: var(--ink);
   cursor: pointer;
-  font-size: 0.92rem;
+  font-size: 1.15rem;
   text-align: left;
 }
 
 .tags button.active {
-  color: var(--accent);
+  background: #f6d5cc;
+  color: #8d3d2c;
   font-weight: 700;
 }
 
 .page-head {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  padding: 1.45rem 1.55rem 1.55rem;
+  border-radius: 22px;
+  background: var(--banner);
 }
 
 h1 {
   font-family: var(--font-serif);
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.7rem, 2.4vw, 2.4rem);
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.02em;
@@ -300,14 +341,31 @@ h1 {
   color: var(--muted);
 }
 
+.page-head .lead {
+  color: inherit;
+  opacity: 0.78;
+}
+
+.search {
+  display: block;
+  width: min(100%, 28rem);
+  margin-top: 1rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  background: #fffdfb;
+  color: var(--ink);
+  box-shadow: 0 0 0 1px rgba(120, 78, 52, 0.08);
+}
+
 .error {
   color: var(--accent);
 }
 
 .books {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
   list-style: none;
   padding: 0;
 }
@@ -360,8 +418,8 @@ h1 {
   display: flex;
   align-items: flex-end;
   padding: 1rem;
-  background: linear-gradient(165deg, hsl(var(--tone) 38% 46%), hsl(var(--tone) 32% 22%));
-  color: #fffdf8;
+  background: linear-gradient(165deg, hsl(var(--tone) 62% 78%), hsl(var(--tone) 46% 64%));
+  color: #3f342e;
 }
 
 .placeholder span {
@@ -375,22 +433,24 @@ h1 {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.95rem 1rem 1.05rem;
+  gap: 0.45rem;
+  padding: 1.1rem 1.15rem 1.2rem;
 }
 
 .category {
-  color: var(--accent);
+  align-self: flex-start;
+  padding: 0.12rem 0.55rem;
+  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 h2 {
   font-family: var(--font-serif);
   font-size: 1.2rem;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.45;
 }
 
 .author {
@@ -404,7 +464,7 @@ h2 {
   justify-content: space-between;
   gap: 0.75rem;
   margin-top: auto;
-  padding-top: 0.85rem;
+  padding-top: 1rem;
 }
 
 .price {
@@ -419,13 +479,13 @@ h2 {
 .add {
   position: relative;
   z-index: 2;
-  margin-top: 0.85rem;
+  margin-top: 1rem;
   width: 100%;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 999px;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-elevated);
-  color: var(--ink);
+  padding: 0.58rem 0.85rem;
+  background: var(--accent);
+  color: #fffaf6;
   cursor: pointer;
   font-weight: 700;
 }
@@ -522,8 +582,15 @@ h2 {
 }
 
 .add:disabled {
+  background: color-mix(in srgb, var(--line) 80%, var(--bg-elevated));
   color: var(--muted);
   cursor: not-allowed;
+}
+
+@media (max-width: 1100px) {
+  .books {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 800px) {
@@ -532,20 +599,19 @@ h2 {
     gap: 1.25rem;
   }
 
-  .filters {
-    position: static;
+  .books {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tags {
     flex-direction: row;
     overflow-x: auto;
-    border-top: 0;
+    padding-bottom: 0.2rem;
   }
 
   .tags button {
     width: auto;
     white-space: nowrap;
-    border-bottom: 0;
   }
 
   .dialog {

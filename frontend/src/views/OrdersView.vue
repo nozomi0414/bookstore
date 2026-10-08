@@ -61,6 +61,10 @@ function formatDate(value) {
           <span>{{ statusText[order.status] || order.status }}</span>
         </div>
         <p class="when">{{ formatDate(order.createdAt) }}</p>
+        <p v-if="order.shippingAddress" class="ship">
+          {{ order.recipientName }}　{{ order.recipientPhone }}<br />
+          {{ order.shippingAddress }}
+        </p>
         <ul>
           <li v-for="item in order.orderItems" :key="item.id">
             {{ item.title }} × {{ item.quantity }}
@@ -128,9 +132,15 @@ h2 {
   font-size: 1.2rem;
 }
 
-.when {
+.when,
+.ship {
   margin-top: 0.2rem;
   font-size: 0.9rem;
+}
+
+.ship {
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .orders ul {

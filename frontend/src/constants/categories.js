@@ -1,3 +1,27 @@
+export const categoryTones = {
+  文學: { bg: '#f6d5cc', ink: '#8d3d2c' },
+  財經企管: { bg: '#d5ebe4', ink: '#1f6a62' },
+  生活風格: { bg: '#f8e3c4', ink: '#8a5a22' },
+  飲食料理: { bg: '#f6d3c0', ink: '#8d4b2e' },
+  心理勵志: { bg: '#e4d8f4', ink: '#69428f' },
+  醫療保健: { bg: '#d7efe4', ink: '#2d6b52' },
+  旅遊: { bg: '#d4e6f8', ink: '#2d5f8a' },
+  宗教命理: { bg: '#efe4c4', ink: '#7a6230' },
+  '教育/親子教養': { bg: '#f8dce8', ink: '#8a3d62' },
+  '童書/青少年': { bg: '#fde7c2', ink: '#8a5a16' },
+  羅曼史: { bg: '#f8d0dc', ink: '#8d3456' },
+  輕小說: { bg: '#ddd8f8', ink: '#5340a0' },
+  漫畫: { bg: '#f7d6e6', ink: '#8a3568' },
+  '語言/字辭典': { bg: '#dce8f6', ink: '#2e5680' },
+  藝術設計: { bg: '#f3e0d2', ink: '#8a4e32' },
+  電腦資訊: { bg: '#d5e4f4', ink: '#2c5278' },
+  自然科普: { bg: '#d7ead4', ink: '#2f6840' },
+  人文歷史: { bg: '#eadfce', ink: '#6e5438' },
+  社會哲思: { bg: '#e3e0f6', ink: '#5348a0' },
+  '考試書/政府出版品': { bg: '#e7e6d2', ink: '#6a6230' },
+  參考書: { bg: '#e6e2da', ink: '#5e564c' },
+}
+
 export const categories = [
   '文學',
   '財經企管',

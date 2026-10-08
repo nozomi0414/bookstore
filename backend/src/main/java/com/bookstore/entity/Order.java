@@ -38,6 +38,12 @@ public class Order {
 
     private int totalPrice;
 
+    private String recipientName;
+
+    private String recipientPhone;
+
+    private String shippingAddress;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
