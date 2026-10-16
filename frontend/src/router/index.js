@@ -25,6 +25,12 @@ const router = createRouter({
       component: () => import('../views/CartView.vue'),
     },
     {
+      path: '/orders/history',
+      name: 'order-history',
+      meta: { auth: true },
+      component: () => import('../views/OrdersView.vue'),
+    },
+    {
       path: '/orders',
       name: 'orders',
       meta: { auth: true },
@@ -36,12 +42,33 @@ const router = createRouter({
       meta: { auth: true },
       component: () => import('../views/AccountView.vue'),
     },
+    {
+      path: '/books/new',
+      name: 'book-new',
+      meta: { auth: true, admin: true },
+      component: () => import('../views/BookCreateView.vue'),
+    },
+    {
+      path: '/books/:id(\\d+)/edit',
+      name: 'book-edit',
+      meta: { auth: true, admin: true },
+      component: () => import('../views/BookCreateView.vue'),
+    },
+    {
+      path: '/books/:id(\\d+)',
+      name: 'book-detail',
+      component: () => import('../views/BookDetailView.vue'),
+    },
   ],
 })
 
 router.beforeEach((to) => {
-  if (to.meta.auth && !localStorage.getItem('token')) {
+  const token = localStorage.getItem('token')
+  if ((to.meta.auth || to.meta.admin) && !token) {
     return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.admin && localStorage.getItem('role') !== 'ADMIN') {
+    return { name: 'home' }
   }
 })
 

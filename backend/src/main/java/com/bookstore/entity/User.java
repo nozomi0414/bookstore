@@ -35,6 +35,12 @@ public class User {
 	@Column(nullable = false)
 	private String name;
 
+	@Column(length = 40)
+	private String phone;
+
+	@Column(length = 200)
+	private String address;
+
 	@Column(nullable = false)
 	private String role = "USER";
 

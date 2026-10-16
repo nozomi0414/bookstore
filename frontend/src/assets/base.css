@@ -27,11 +27,7 @@
 body {
   min-height: 100vh;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(244, 176, 140, 0.55), transparent 26rem),
-    radial-gradient(circle at 100% 8%, rgba(156, 196, 168, 0.45), transparent 24rem),
-    radial-gradient(circle at 80% 100%, rgba(168, 196, 230, 0.4), transparent 22rem),
-    var(--bg);
+  background: var(--bg);
   line-height: 1.6;
   font-family: var(--font-sans);
   font-size: 16px;

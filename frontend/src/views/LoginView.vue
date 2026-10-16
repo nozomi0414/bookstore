@@ -33,7 +33,7 @@ async function submit() {
       method: 'POST',
       body: { email: email.value, password: password.value },
     })
-    setSession({ token: data.token, email: email.value })
+    setSession({ token: data.token, email: email.value, role: data.role })
     router.push(nextPath())
   } catch (e) {
     error.value = describeError(e)
@@ -110,8 +110,8 @@ button {
   border: 0;
   border-radius: 999px;
   padding: 0.7rem 1rem;
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--accent);
+  color: #fffaf6;
   cursor: pointer;
   font-weight: 700;
 }

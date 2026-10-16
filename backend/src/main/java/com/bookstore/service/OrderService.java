@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.bookstore.entity.Order;
 import com.bookstore.dto.CreateOrderRequest;
+import com.bookstore.dto.PayOrderResponse;
 import com.bookstore.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,12 +30,15 @@ public class OrderService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
+    private final OrderMailService orderMailService;
 
     public enum OrderStatus {
+        UNPAID,
         CREATED,
         PAID,
         SHIPPED,
         DELIVERED,
+        COMPLETED,
         CANCELLED
     }
 
@@ -70,7 +74,7 @@ public class OrderService {
             Book book = bookRepository.findByIdForUpdate(bookId)
                     .orElseThrow(() -> new IllegalArgumentException("Book not found"));
             int quantity = quantities.get(bookId);
-            takeStock(book, quantity);
+            ensureStock(book, quantity);
             if (book.getPrice() == null) {
                 throw new IllegalArgumentException("Book price is missing");
             }
@@ -93,10 +97,77 @@ public class OrderService {
         order.setRecipientName(recipientName);
         order.setRecipientPhone(recipientPhone);
         order.setShippingAddress(shippingAddress);
-        order.setStatus(OrderStatus.CREATED.name());
+        order.setStatus(OrderStatus.UNPAID.name());
         order.setCreatedAt(LocalDateTime.now());
 
         return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order cancel(String authorization, Long orderId) {
+        Order order = ownedOrder(authorization, orderId);
+        boolean unpaid = OrderStatus.UNPAID.name().equals(order.getStatus());
+        boolean legacyCreated = OrderStatus.CREATED.name().equals(order.getStatus());
+        if (!unpaid && !legacyCreated) {
+            throw new IllegalArgumentException("這筆訂單無法取消");
+        }
+        if (legacyCreated) {
+            for (OrderItem item : order.getOrderItems()) {
+                Book book = bookRepository.findByIdForUpdate(item.getBook().getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+                restoreStock(book, item.getQuantity());
+            }
+        }
+        order.setStatus(OrderStatus.CANCELLED.name());
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order receive(String authorization, Long orderId) {
+        Order order = ownedOrder(authorization, orderId);
+        if (!OrderStatus.DELIVERED.name().equals(order.getStatus())) {
+            throw new IllegalArgumentException("這筆訂單還沒抵達，不能確認收貨");
+        }
+        order.setStatus(OrderStatus.COMPLETED.name());
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public PayOrderResponse pay(String authorization, Long orderId) {
+        Order order = ownedOrder(authorization, orderId);
+        boolean unpaid = OrderStatus.UNPAID.name().equals(order.getStatus());
+        boolean legacyCreated = OrderStatus.CREATED.name().equals(order.getStatus());
+        if (!unpaid && !legacyCreated) {
+            throw new IllegalArgumentException("這筆訂單不能付款");
+        }
+        if (unpaid) {
+            for (OrderItem item : order.getOrderItems()) {
+                Book book = bookRepository.findByIdForUpdate(item.getBook().getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+                takeStock(book, item.getQuantity());
+            }
+        }
+        order.setStatus(OrderStatus.DELIVERED.name());
+        order = orderRepository.save(order);
+        boolean mailSent = orderMailService.notifyEstablished(order);
+        PayOrderResponse response = new PayOrderResponse();
+        response.setOrder(order);
+        response.setMailSent(mailSent);
+        return response;
+    }
+
+    private void ensureStock(Book book, int quantity) {
+        if (book.getStock() == null || book.getStock() >= quantity) {
+            return;
+        }
+        throw new IllegalArgumentException(stockMessage(book));
+    }
+
+    private void restoreStock(Book book, int quantity) {
+        if (book.getStock() == null) {
+            return;
+        }
+        book.setStock(book.getStock() + quantity);
     }
 
     private void takeStock(Book book, int quantity) {
@@ -104,10 +175,14 @@ public class OrderService {
             return;
         }
         if (book.getStock() < quantity) {
-            String title = book.getTitle() == null || book.getTitle().isBlank() ? "這本書" : book.getTitle();
-            throw new IllegalArgumentException(title + "庫存不足，目前剩下 " + book.getStock() + " 本");
+            throw new IllegalArgumentException(stockMessage(book));
         }
         book.setStock(book.getStock() - quantity);
+    }
+
+    private String stockMessage(Book book) {
+        String title = book.getTitle() == null || book.getTitle().isBlank() ? "這本書" : book.getTitle();
+        return title + "庫存不足，目前剩下 " + book.getStock() + " 本";
     }
 
     private String requireText(String value, String missingMessage, int maxLength, String tooLongMessage) {
@@ -128,6 +203,16 @@ public class OrderService {
             throw new IllegalArgumentException("請填寫有效的電話");
         }
         return phone;
+    }
+
+    private Order ownedOrder(String authorization, Long orderId) {
+        User user = currentUser(authorization);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "找不到這筆訂單"));
+        if (order.getUser() == null || !user.getId().equals(order.getUser().getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "找不到這筆訂單");
+        }
+        return order;
     }
 
     public List<Order> get(String authorization) {

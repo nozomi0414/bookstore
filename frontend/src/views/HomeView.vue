@@ -1,19 +1,20 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '@/api/client'
-import { categories, categoryTones } from '@/constants/categories'
+import { categories } from '@/constants/categories'
 import { useCart } from '@/composables/useCart'
+import { useToast } from '@/composables/useToast'
 
+const pageSize = 10
 const books = ref([])
 const error = ref('')
 const loading = ref(true)
 const brokenCovers = ref({})
 const selected = ref('全部')
 const query = ref('')
-const justAdded = ref(null)
-const detail = ref(null)
-const closeButton = ref(null)
+const page = ref(1)
 const { items, addBook } = useCart()
+const { show } = useToast()
 
 const keyword = computed(() => query.value.trim())
 
@@ -27,10 +28,20 @@ const visibleBooks = computed(() => {
   })
 })
 
+const pageCount = computed(() => Math.max(1, Math.ceil(visibleBooks.value.length / pageSize)))
+
+const pagedBooks = computed(() => {
+  const start = (page.value - 1) * pageSize
+  return visibleBooks.value.slice(start, start + pageSize)
+})
+
 const leadText = computed(() => {
   if (books.value.length === 0) return '新書上架後會出現在這裡。'
   const count = visibleBooks.value.length
-  return keyword.value ? `找到 ${count} 本` : `共 ${count} 本`
+  const start = count === 0 ? 0 : (page.value - 1) * pageSize + 1
+  const end = Math.min(page.value * pageSize, count)
+  const range = count === 0 ? '0 本' : `第 ${start}–${end} 本，共 ${count} 本`
+  return keyword.value ? `找到 ${range}` : range
 })
 
 const pageTitle = computed(() => {
@@ -38,14 +49,15 @@ const pageTitle = computed(() => {
   return selected.value
 })
 
-const bannerStyle = computed(() => {
-  const tone = categoryTones[selected.value]
-  if (!tone) return undefined
-  return { background: tone.bg, color: tone.ink }
+watch([selected, keyword], () => {
+  page.value = 1
+})
+
+watch(pageCount, (count) => {
+  if (page.value > count) page.value = count
 })
 
 onMounted(async () => {
-  window.addEventListener('keydown', onKeydown)
   try {
     books.value = await api('/api/books')
   } catch (e) {
@@ -58,12 +70,6 @@ onMounted(async () => {
 function formatPrice(price) {
   if (price == null) return '價格未定'
   return `NT$ ${price.toLocaleString('zh-Hant')}`
-}
-
-function chipStyle(category) {
-  const tone = categoryTones[category]
-  if (!tone) return undefined
-  return { background: tone.bg, color: tone.ink }
 }
 
 function coverTone(title) {
@@ -86,41 +92,11 @@ function atStockLimit(book) {
   return (item?.quantity || 0) >= book.stock
 }
 
-function add(book) {
-  if (!addBook(book)) return
-  justAdded.value = book.id
-  window.setTimeout(() => {
-    if (justAdded.value === book.id) justAdded.value = null
-  }, 1200)
+async function add(book) {
+  if (!(await addBook(book))) return
+  show(`已將《${book.title}》加入購物車`)
 }
 
-function field(value) {
-  const text = value == null ? '' : String(value).trim()
-  return text || '尚未填寫'
-}
-
-async function openDetail(book) {
-  detail.value = book
-  await nextTick()
-  closeButton.value?.focus()
-}
-
-function closeDetail() {
-  detail.value = null
-}
-
-function onKeydown(event) {
-  if (event.key === 'Escape' && detail.value) closeDetail()
-}
-
-watch(detail, (book) => {
-  document.body.style.overflow = book ? 'hidden' : ''
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onKeydown)
-  document.body.style.overflow = ''
-})
 </script>
 
 <template>
@@ -136,7 +112,6 @@ onBeforeUnmount(() => {
           :key="category"
           type="button"
           :class="{ active: selected === category }"
-          :style="selected === category ? chipStyle(category) : undefined"
           @click="selected = category"
         >
           {{ category }}
@@ -145,7 +120,7 @@ onBeforeUnmount(() => {
     </aside>
 
     <section>
-      <header class="page-head" :style="bannerStyle">
+      <header class="page-head">
         <h1>{{ pageTitle }}</h1>
         <p v-if="!loading && !error" class="lead">{{ leadText }}</p>
         <input
@@ -164,13 +139,12 @@ onBeforeUnmount(() => {
       </p>
 
       <ul v-else class="books">
-        <li v-for="book in visibleBooks" :key="book.id" class="book">
-          <button
-            type="button"
+        <li v-for="book in pagedBooks" :key="book.id" class="book">
+          <RouterLink
             class="card-hit"
+            :to="{ name: 'book-detail', params: { id: book.id } }"
             :aria-label="`查看${book.title}的詳細資訊`"
-            @click="openDetail(book)"
-          ></button>
+          ></RouterLink>
           <div class="cover-wrap">
             <img
               v-if="showCover(book)"
@@ -190,86 +164,36 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="info">
-            <p v-if="book.category" class="category" :style="chipStyle(book.category)">
-              {{ book.category }}
-            </p>
             <h2>{{ book.title }}</h2>
             <p class="author">{{ book.author || '作者未填' }}</p>
-            <div class="meta">
-              <p class="price">{{ formatPrice(book.price) }}</p>
-              <p v-if="book.stock != null" class="stock">庫存 {{ book.stock }}</p>
-            </div>
+            <p class="price">{{ formatPrice(book.price) }}</p>
             <button type="button" class="add" :disabled="atStockLimit(book)" @click="add(book)">
+              <svg class="cart-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6.5 7h14l-1.4 8.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L5.2 4.5H3"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <circle cx="9" cy="20" r="1.3" fill="currentColor" />
+                <circle cx="17" cy="20" r="1.3" fill="currentColor" />
+              </svg>
               {{
-                atStockLimit(book) ? '已達庫存' : justAdded === book.id ? '已加入購物車' : '加入購物車'
+                atStockLimit(book) ? '已達庫存' : '加入購物車'
               }}
             </button>
           </div>
         </li>
       </ul>
-    </section>
 
-    <Teleport to="body">
-      <div v-if="detail" class="backdrop" @click.self="closeDetail">
-        <article
-          class="dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="book-detail-title"
-        >
-          <button ref="closeButton" type="button" class="close" @click="closeDetail">關閉</button>
-          <div class="detail-cover">
-            <img
-              v-if="showCover(detail)"
-              class="cover"
-              :src="detail.coverImageUrl"
-              :alt="detail.title"
-              @error="coverFailed(detail.id)"
-            />
-            <div
-              v-else
-              class="cover placeholder"
-              :style="{ '--tone': coverTone(detail.title) }"
-              aria-hidden="true"
-            >
-              <span>{{ detail.title }}</span>
-            </div>
-          </div>
-          <div class="detail-body">
-            <p v-if="detail.category" class="category" :style="chipStyle(detail.category)">
-              {{ detail.category }}
-            </p>
-            <h2 id="book-detail-title">{{ detail.title }}</h2>
-            <p class="author">{{ detail.author || '作者未填' }}</p>
-            <p class="description">{{ field(detail.description) }}</p>
-            <dl class="facts">
-              <div>
-                <dt>出版社</dt>
-                <dd>{{ field(detail.publisher) }}</dd>
-              </div>
-              <div>
-                <dt>ISBN</dt>
-                <dd>{{ field(detail.isbn) }}</dd>
-              </div>
-              <div>
-                <dt>庫存</dt>
-                <dd>{{ detail.stock == null ? '尚未填寫' : detail.stock }}</dd>
-              </div>
-            </dl>
-            <p class="price detail-price">{{ formatPrice(detail.price) }}</p>
-            <button type="button" class="add detail-add" :disabled="atStockLimit(detail)" @click="add(detail)">
-              {{
-                atStockLimit(detail)
-                  ? '已達庫存'
-                  : justAdded === detail.id
-                    ? '已加入購物車'
-                    : '加入購物車'
-              }}
-            </button>
-          </div>
-        </article>
+      <div v-if="!loading && !error && visibleBooks.length > 0" class="pager">
+        <button type="button" :disabled="page === 1" @click="page -= 1">上一頁</button>
+        <span>第 {{ page }} / {{ pageCount }} 頁</span>
+        <button type="button" :disabled="page === pageCount" @click="page += 1">下一頁</button>
       </div>
-    </Teleport>
+    </section>
   </main>
 </template>
 
@@ -379,6 +303,11 @@ h1 {
   border-radius: 18px;
   background: var(--bg-elevated);
   box-shadow: var(--shadow);
+  transition: box-shadow 0.2s ease;
+}
+
+.book:hover {
+  box-shadow: 0 16px 36px rgba(120, 78, 52, 0.16);
 }
 
 .book:has(.card-hit:focus-visible) {
@@ -394,8 +323,7 @@ h1 {
   cursor: pointer;
 }
 
-.cover-wrap,
-.detail-cover {
+.cover-wrap {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -412,6 +340,11 @@ h1 {
   height: 100%;
   object-fit: cover;
   object-position: center top;
+  transition: transform 0.35s ease;
+}
+
+.book:hover .cover {
+  transform: scale(1.04);
 }
 
 .placeholder {
@@ -437,15 +370,6 @@ h1 {
   padding: 1.1rem 1.15rem 1.2rem;
 }
 
-.category {
-  align-self: flex-start;
-  padding: 0.12rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
 h2 {
   font-family: var(--font-serif);
   font-size: 1.2rem;
@@ -458,27 +382,19 @@ h2 {
   font-size: 0.92rem;
 }
 
-.meta {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: auto;
-  padding-top: 1rem;
-}
-
 .price {
+  margin-top: auto;
+  padding-top: 0.85rem;
   font-weight: 700;
-}
-
-.stock {
-  color: var(--muted);
-  font-size: 0.82rem;
 }
 
 .add {
   position: relative;
   z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   margin-top: 1rem;
   width: 100%;
   border: 0;
@@ -490,95 +406,33 @@ h2 {
   font-weight: 700;
 }
 
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: grid;
-  place-items: center;
-  padding: 1.25rem;
-  background: rgba(28, 25, 21, 0.46);
+.cart-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
 }
 
-.dialog {
-  position: relative;
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 1.5rem;
-  width: min(720px, 100%);
-  max-height: min(90vh, 820px);
-  overflow: auto;
-  padding: 1.35rem;
-  border-radius: 20px;
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow);
-}
-
-.detail-cover {
-  width: 220px;
-}
-
-.close {
-  position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
-  z-index: 1;
-  border: 0;
-  border-radius: 999px;
-  padding: 0.35rem 0.75rem;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.detail-body {
+.pager {
   display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding-right: 3rem;
-}
-
-.detail-body h2 {
-  font-size: clamp(1.6rem, 3vw, 2.1rem);
-}
-
-.description {
-  margin-top: 0.85rem;
-  color: var(--ink);
-  line-height: 1.7;
-}
-
-.facts {
-  display: grid;
-  gap: 0.65rem;
-  margin-top: 1.1rem;
-}
-
-.facts div {
-  display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr);
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0.75rem;
+  margin-top: 1.5rem;
 }
 
-.facts dt {
+.pager button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  background: var(--bg-elevated);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pager button:disabled {
   color: var(--muted);
-}
-
-.facts dd {
-  overflow-wrap: anywhere;
-}
-
-.detail-price {
-  margin-top: 1.15rem;
-  font-size: 1.15rem;
-}
-
-.detail-add {
-  align-self: flex-start;
-  width: auto;
-  min-width: 9rem;
-  padding-inline: 1.1rem;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .add:disabled {
@@ -612,15 +466,6 @@ h2 {
   .tags button {
     width: auto;
     white-space: nowrap;
-  }
-
-  .dialog {
-    grid-template-columns: 1fr;
-  }
-
-  .detail-cover {
-    width: min(220px, 70%);
-    margin-inline: auto;
   }
 }
 </style>

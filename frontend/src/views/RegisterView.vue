@@ -23,10 +23,26 @@ function nextPath() {
   return '/'
 }
 
+function isEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+}
+
+function hasLetterAndNumber(value) {
+  return /[A-Za-z]/.test(value) && /\d/.test(value)
+}
+
 async function submit() {
   error.value = ''
-  if (!name.value || !email.value || !password.value || !confirmPassword.value) {
+  if (!name.value.trim() || !email.value.trim() || !password.value || !confirmPassword.value) {
     error.value = '請填寫姓名、電子郵件、密碼和確認密碼'
+    return
+  }
+  if (!isEmail(email.value)) {
+    error.value = '帳號必須是電子郵件格式'
+    return
+  }
+  if (!hasLetterAndNumber(password.value)) {
+    error.value = '密碼必須同時包含英文和數字'
     return
   }
   if (password.value !== confirmPassword.value) {
@@ -57,7 +73,7 @@ async function submit() {
   <main class="panel">
     <h1>註冊</h1>
     <p class="lead">建立帳號後就能結帳、查看訂單。</p>
-    <form @submit.prevent="submit">
+    <form novalidate @submit.prevent="submit">
       <label>
         姓名
         <input v-model="name" type="text" autocomplete="name" />
@@ -69,6 +85,7 @@ async function submit() {
       <label>
         密碼
         <input v-model="password" type="password" autocomplete="new-password" />
+        <span class="hint">需同時包含英文和數字</span>
       </label>
       <label>
         確認密碼
@@ -123,13 +140,18 @@ input {
   color: var(--ink);
 }
 
+.hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 button {
   margin-top: 0.3rem;
   border: 0;
   border-radius: 999px;
   padding: 0.7rem 1rem;
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--accent);
+  color: #fffaf6;
   cursor: pointer;
   font-weight: 700;
 }

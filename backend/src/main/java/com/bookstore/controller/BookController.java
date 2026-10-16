@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,7 +34,17 @@ public class BookController {
 	}
 
 	@PostMapping
-	public Book create(@RequestBody Book book) {
-		return bookService.create(book);
+	public Book create(
+			@RequestHeader(value = "Authorization", required = false) String authorization,
+			@RequestBody Book book) {
+		return bookService.create(authorization, book);
+	}
+
+	@PutMapping("/{id}")
+	public Book update(
+			@RequestHeader(value = "Authorization", required = false) String authorization,
+			@PathVariable Long id,
+			@RequestBody Book book) {
+		return bookService.update(authorization, id, book);
 	}
 }

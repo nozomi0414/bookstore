@@ -2,9 +2,11 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useCart } from '@/composables/useCart'
+import { useToast } from '@/composables/useToast'
 
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, isAdmin } = useAuth()
 const { count } = useCart()
+const { message } = useToast()
 </script>
 
 <template>
@@ -16,7 +18,9 @@ const { count } = useCart()
           購物車
           <span v-if="count" class="badge">{{ count }}</span>
         </RouterLink>
+        <RouterLink v-if="isAdmin" to="/books/new">上架</RouterLink>
         <RouterLink v-if="isLoggedIn" to="/orders">訂單</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/orders/history">歷史訂單</RouterLink>
         <RouterLink v-if="isLoggedIn" to="/account">帳號</RouterLink>
         <RouterLink v-else to="/login">登入</RouterLink>
       </nav>
@@ -25,6 +29,7 @@ const { count } = useCart()
   <div class="shell">
     <RouterView />
   </div>
+  <p v-if="message" class="toast" role="status">{{ message }}</p>
 </template>
 
 <style scoped>
@@ -83,8 +88,9 @@ const { count } = useCart()
 }
 
 .nav a.router-link-active {
-  color: var(--ink);
-  background: var(--bg-elevated);
+  background: #f6d5cc;
+  color: #8d3d2c;
+  font-weight: 700;
 }
 
 .badge {
@@ -96,6 +102,20 @@ const { count } = useCart()
   font-size: 0.75rem;
   line-height: 1.25rem;
   text-align: center;
+}
+
+.toast {
+  position: fixed;
+  top: 5.4rem;
+  right: 1.25rem;
+  z-index: 30;
+  max-width: min(22rem, calc(100% - 2rem));
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  background: var(--bg-elevated);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-weight: 700;
 }
 
 @media (max-width: 640px) {

@@ -31,6 +31,7 @@ const ERRORS = {
   'Invalid authorization': '請先登入',
   'Invalid or expired token': '登入已過期，請重新登入',
   'User not found': '找不到這個帳號',
+  'Price must be 0 or greater': '價格必須是 0 或以上',
 }
 
 export function describeError(error) {
