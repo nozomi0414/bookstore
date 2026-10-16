@@ -1,4 +1,4 @@
-const BASE = 'http://localhost:8080'
+const BASE = ''
 
 export async function api(path, { method = 'GET', body, token } = {}) {
   let response
@@ -12,7 +12,7 @@ export async function api(path, { method = 'GET', body, token } = {}) {
       body: body ? JSON.stringify(body) : undefined,
     })
   } catch {
-    throw new Error('無法連上後端，請確認 http://localhost:8080 已啟動')
+    throw new Error('目前無法連線，請稍後再試')
   }
 
   const data = response.status === 204 ? null : await response.json().catch(() => null)
