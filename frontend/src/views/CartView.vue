@@ -180,7 +180,10 @@ h1 {
 
 .lead {
   margin-top: 0.5rem;
+  padding: 2rem;
+  text-align: center;
   color: var(--muted);
+  font-size: 1.05rem;
 }
 
 .lines {
@@ -201,6 +204,12 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--bg-elevated);
+  transition: all var(--transition-base);
+}
+
+.lines li:hover {
+  box-shadow: 0 4px 16px rgba(120, 78, 52, 0.08);
+  border-color: rgba(90, 62, 48, 0.2);
 }
 
 h2 {
@@ -226,15 +235,28 @@ h2 {
   background: transparent;
   color: var(--ink);
   cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.qty button:hover,
+.remove:hover {
+  border-color: var(--accent);
+  background: rgba(212, 101, 74, 0.05);
+  color: var(--accent);
 }
 
 .qty button {
   width: 1.8rem;
   height: 1.8rem;
+  font-weight: 600;
 }
 
 .remove {
   padding: 0.35rem 0.7rem;
+}
+
+.remove:hover {
+  background: rgba(212, 101, 74, 0.1);
 }
 
 .summary {
@@ -255,12 +277,20 @@ h2 {
 .summary input,
 .summary textarea {
   width: 100%;
-  border: 1px solid var(--line);
+  border: 2px solid var(--line);
   border-radius: 12px;
   padding: 0.7rem 0.8rem;
   background: var(--bg-elevated);
   color: var(--ink);
   resize: vertical;
+  transition: all var(--transition-base);
+}
+
+.summary input:focus,
+.summary textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 101, 74, 0.1);
+  outline: none;
 }
 
 .notice {
@@ -275,6 +305,13 @@ h2 {
   background: var(--ink);
   color: var(--bg);
   font-weight: 700;
+  transition: all var(--transition-base);
+}
+
+.summary button:hover:not(:disabled) {
+  background: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 101, 74, 0.3);
 }
 
 .summary button:disabled {

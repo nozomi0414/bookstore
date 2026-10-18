@@ -5,15 +5,20 @@
   --muted: #7d7168;
   --line: rgba(90, 62, 48, 0.12);
   --accent: #d4654a;
+  --accent-hover: #c05440;
   --panel: #f4e4d2;
   --banner: linear-gradient(115deg, #f8d9cc 0%, #f8efd4 48%, #dcead8 100%);
   --shadow: 0 10px 28px rgba(120, 78, 52, 0.08);
+  --shadow-hover: 0 14px 36px rgba(120, 78, 52, 0.14);
   --font-sans: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
   --font-serif: 'Noto Serif TC', 'PMingLiU', 'Songti TC', serif;
   --color-background: var(--bg);
   --color-heading: var(--ink);
   --color-text: var(--muted);
   --color-border: var(--line);
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   color-scheme: light;
 }
 
@@ -43,4 +48,32 @@ button,
 input,
 textarea {
   font: inherit;
+}
+
+button {
+  transition: all var(--transition-base);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 101, 74, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
