@@ -254,7 +254,8 @@ h1 {
 .author {
   margin-top: 0.55rem;
   color: var(--muted);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  font-weight: 400;
 }
 
 .buy {
@@ -269,12 +270,13 @@ h1 {
 }
 
 .price {
-  font-size: 1.7rem;
+  font-size: 1.85rem;
   font-weight: 700;
 }
 
 .stock {
   color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .section {

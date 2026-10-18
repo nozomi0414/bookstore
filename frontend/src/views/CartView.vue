@@ -394,26 +394,8 @@ h2 {
   min-width: 0;
 }
 
-<<<<<<< HEAD
 .title {
   font-weight: 700;
-=======
-.lines li {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 1rem;
-  align-items: center;
-  padding: 1rem;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--bg-elevated);
-  transition: all var(--transition-base);
-}
-
-.lines li:hover {
-  box-shadow: 0 4px 16px rgba(120, 78, 52, 0.08);
-  border-color: rgba(90, 62, 48, 0.2);
->>>>>>> a4bc78dffc644df7f3fba307cf2b5f510a938bac
 }
 
 .author,
@@ -445,8 +427,15 @@ h2 {
   background: #fff;
   color: var(--ink);
   cursor: pointer;
-<<<<<<< HEAD
   font-weight: 700;
+  transition: all var(--transition-base);
+}
+
+.qty button:hover,
+.remove:hover {
+  border-color: var(--accent);
+  background: rgba(212, 101, 74, 0.05);
+  color: var(--accent);
 }
 
 .qty button {
@@ -459,22 +448,6 @@ h2 {
 .qty span {
   min-width: 1.6rem;
   text-align: center;
-=======
-  transition: all var(--transition-base);
-}
-
-.qty button:hover,
-.remove:hover {
-  border-color: var(--accent);
-  background: rgba(212, 101, 74, 0.05);
-  color: var(--accent);
-}
-
-.qty button {
-  width: 1.8rem;
-  height: 1.8rem;
-  font-weight: 600;
->>>>>>> a4bc78dffc644df7f3fba307cf2b5f510a938bac
 }
 
 .remove {
@@ -483,7 +456,10 @@ h2 {
   color: var(--muted);
 }
 
-<<<<<<< HEAD
+.remove:hover {
+  background: rgba(212, 101, 74, 0.1);
+}
+
 .batch {
   display: flex;
   align-items: center;
@@ -518,13 +494,6 @@ h2 {
 }
 
 .checkout {
-=======
-.remove:hover {
-  background: rgba(212, 101, 74, 0.1);
-}
-
-.summary {
->>>>>>> a4bc78dffc644df7f3fba307cf2b5f510a938bac
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
@@ -570,8 +539,8 @@ h2 {
   transition: all var(--transition-base);
 }
 
-.summary input:focus,
-.summary textarea:focus {
+.checkout input:focus,
+.checkout textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(212, 101, 74, 0.1);
   outline: none;
@@ -589,7 +558,7 @@ h2 {
   transition: all var(--transition-base);
 }
 
-.summary button:hover:not(:disabled) {
+.checkout button:hover:not(:disabled) {
   background: var(--accent);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(212, 101, 74, 0.3);
@@ -638,7 +607,66 @@ h2 {
   color: var(--accent);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
+  .sheet {
+    overflow-x: visible;
+    background: transparent;
+    border: 0;
+  }
+
+  .head {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "check product remove"
+      "check price qty";
+    gap: 0.65rem 0.75rem;
+    min-width: 0;
+    margin-top: 0.75rem;
+    padding: 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff;
+  }
+
+  .row > input {
+    grid-area: check;
+    align-self: start;
+    margin-top: 1.4rem;
+  }
+
+  .product {
+    grid-area: product;
+  }
+
+  .price {
+    grid-area: price;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .qty {
+    grid-area: qty;
+    justify-self: end;
+  }
+
+  .remove {
+    grid-area: remove;
+    justify-self: end;
+    align-self: start;
+  }
+
+  .batch {
+    min-width: 0;
+    margin-top: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff;
+  }
+
   .total-row {
     align-items: stretch;
     flex-direction: column;

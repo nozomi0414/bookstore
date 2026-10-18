@@ -10,7 +10,7 @@ const { message } = useToast()
 </script>
 
 <template>
-  <header class="topbar">
+  <header id="top" class="topbar">
     <div class="topbar-inner">
       <RouterLink to="/" class="brand">書店</RouterLink>
       <nav class="nav">
@@ -29,6 +29,9 @@ const { message } = useToast()
   <div class="shell">
     <RouterView />
   </div>
+  <footer class="footer">
+    <a href="#top">回到頂端</a>
+  </footer>
   <p v-if="message" class="toast" role="status">{{ message }}</p>
 </template>
 
@@ -101,15 +104,10 @@ const { message } = useToast()
 }
 
 .nav a.router-link-active {
-<<<<<<< HEAD
   background: #f6d5cc;
   color: #8d3d2c;
   font-weight: 700;
-=======
-  color: var(--ink);
-  background: var(--bg-elevated);
   box-shadow: 0 2px 8px rgba(120, 78, 52, 0.08);
->>>>>>> a4bc78dffc644df7f3fba307cf2b5f510a938bac
 }
 
 .badge {
@@ -134,6 +132,22 @@ const { message } = useToast()
   background: var(--bg-elevated);
   color: var(--ink);
   box-shadow: var(--shadow);
+  font-weight: 700;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  width: min(1560px, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 1.25rem 0 2rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.footer a {
+  flex: none;
+  color: var(--ink);
   font-weight: 700;
 }
 

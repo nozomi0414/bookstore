@@ -318,13 +318,6 @@ h1 {
   border-radius: 18px;
   background: var(--bg-elevated);
   box-shadow: var(--shadow);
-<<<<<<< HEAD
-  transition: box-shadow 0.2s ease;
-}
-
-.book:hover {
-  box-shadow: 0 16px 36px rgba(120, 78, 52, 0.16);
-=======
   transition: all var(--transition-base);
 }
 
@@ -332,7 +325,6 @@ h1 {
   transform: translateY(-4px);
   box-shadow: var(--shadow-hover);
   border-color: rgba(90, 62, 48, 0.2);
->>>>>>> a4bc78dffc644df7f3fba307cf2b5f510a938bac
 }
 
 .book:has(.card-hit:focus-visible) {
@@ -404,12 +396,15 @@ h2 {
 
 .author {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.82rem;
+  font-weight: 400;
 }
 
 .price {
   margin-top: auto;
-  padding-top: 0.85rem;
+  padding-top: 0.65rem;
+  color: var(--ink);
+  font-size: 1.15rem;
   font-weight: 700;
 }
 
@@ -438,7 +433,6 @@ h2 {
   box-shadow: 0 4px 12px rgba(212, 101, 74, 0.3);
 }
 
-<<<<<<< HEAD
 .cart-icon {
   width: 1.05rem;
   height: 1.05rem;
@@ -446,82 +440,6 @@ h2 {
 }
 
 .pager {
-=======
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: grid;
-  place-items: center;
-  padding: 1.25rem;
-  background: rgba(28, 25, 21, 0.46);
-  backdrop-filter: blur(4px);
-  animation: fadeIn var(--transition-base);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.dialog {
-  position: relative;
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 1.5rem;
-  width: min(720px, 100%);
-  max-height: min(90vh, 820px);
-  overflow: auto;
-  padding: 1.35rem;
-  border-radius: 20px;
-  background: var(--bg-elevated);
-  box-shadow: 0 20px 60px rgba(28, 25, 21, 0.3);
-  animation: slideUp var(--transition-slow);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.detail-cover {
-  width: 220px;
-}
-
-.close {
-  position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
-  z-index: 1;
-  border: 0;
-  border-radius: 999px;
-  padding: 0.35rem 0.75rem;
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--muted);
-  cursor: pointer;
-  font-weight: 700;
-  transition: all var(--transition-base);
-  backdrop-filter: blur(4px);
-}
-
-.close:hover {
-  background: var(--bg-elevated);
-  color: var(--ink);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.detail-body {
->>>>>>> a4bc78dffc644df7f3fba307cf2b5f510a938bac
   display: flex;
   flex-wrap: wrap;
   align-items: center;
