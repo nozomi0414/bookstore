@@ -3,14 +3,19 @@ const BASE = ''
 export async function api(path, { method = 'GET', body, token } = {}) {
   let response
   try {
-    response = await fetch(`${BASE}${path}`, {
+    const options = {
       method,
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: body ? JSON.stringify(body) : undefined,
-    })
+    }
+    
+    if (body && method !== 'GET') {
+      options.body = JSON.stringify(body)
+    }
+
+    response = await fetch(`${BASE}${path}`, options)
   } catch {
     throw new Error('目前無法連線，請稍後再試')
   }

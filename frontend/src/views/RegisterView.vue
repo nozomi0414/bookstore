@@ -133,11 +133,18 @@ label {
 }
 
 input {
-  border: 1px solid var(--line);
+  border: 2px solid var(--line);
   border-radius: 12px;
   padding: 0.7rem 0.8rem;
   background: var(--bg-elevated);
   color: var(--ink);
+  transition: all var(--transition-base);
+}
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 101, 74, 0.1);
+  outline: none;
 }
 
 .hint {
@@ -154,6 +161,13 @@ button {
   color: #fffaf6;
   cursor: pointer;
   font-weight: 700;
+  transition: all var(--transition-base);
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 101, 74, 0.3);
 }
 
 button:disabled {
@@ -168,5 +182,12 @@ button:disabled {
 .switch a {
   color: var(--accent);
   font-weight: 700;
+  transition: all var(--transition-base);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+}
+
+.switch a:hover {
+  text-decoration-color: var(--accent);
 }
 </style>

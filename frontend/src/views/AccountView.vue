@@ -220,6 +220,29 @@ textarea {
   background: transparent;
   color: var(--ink);
   cursor: pointer;
+<<<<<<< HEAD
   font-weight: 700;
+=======
+  font-weight: 600;
+  transition: all var(--transition-base);
+}
+
+.actions a:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 101, 74, 0.3);
+}
+
+.actions button {
+  background: transparent;
+>>>>>>> a4bc78dffc644df7f3fba307cf2b5f510a938bac
+}
+
+.actions button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(212, 101, 74, 0.05);
 }
 </style>

@@ -224,6 +224,9 @@ h1 {
 
 .lead {
   margin-top: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  font-size: 1.05rem;
 }
 
 .error {
@@ -245,12 +248,28 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--bg-elevated);
+  transition: all var(--transition-base);
+}
+
+.orders > li:hover {
+  box-shadow: 0 4px 16px rgba(120, 78, 52, 0.08);
+  border-color: rgba(90, 62, 48, 0.2);
 }
 
 .heading {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
+}
+
+.heading span {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 h2 {
