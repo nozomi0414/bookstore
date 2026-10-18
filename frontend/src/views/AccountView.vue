@@ -62,9 +62,25 @@ h1 {
   background: var(--bg-elevated);
   color: var(--ink);
   cursor: pointer;
+  font-weight: 600;
+  transition: all var(--transition-base);
+}
+
+.actions a:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 101, 74, 0.3);
 }
 
 .actions button {
   background: transparent;
+}
+
+.actions button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(212, 101, 74, 0.05);
 }
 </style>

@@ -3,14 +3,19 @@ const BASE = 'http://localhost:8080'
 export async function api(path, { method = 'GET', body, token } = {}) {
   let response
   try {
-    response = await fetch(`${BASE}${path}`, {
+    const options = {
       method,
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: body ? JSON.stringify(body) : undefined,
-    })
+    }
+    
+    if (body && method !== 'GET') {
+      options.body = JSON.stringify(body)
+    }
+
+    response = await fetch(`${BASE}${path}`, options)
   } catch {
     throw new Error('無法連上後端，請確認 http://localhost:8080 已啟動')
   }

@@ -64,6 +64,13 @@ const { count } = useCart()
   font-size: 1.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+  transition: all var(--transition-base);
+}
+
+.brand:hover {
+  background: #f3c5b8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(141, 61, 44, 0.15);
 }
 
 .nav {
@@ -80,11 +87,18 @@ const { count } = useCart()
   padding: 0.4rem 0.8rem;
   border-radius: 999px;
   color: var(--muted);
+  transition: all var(--transition-base);
+}
+
+.nav a:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
 }
 
 .nav a.router-link-active {
   color: var(--ink);
   background: var(--bg-elevated);
+  box-shadow: 0 2px 8px rgba(120, 78, 52, 0.08);
 }
 
 .badge {
