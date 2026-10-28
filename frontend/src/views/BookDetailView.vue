@@ -57,7 +57,7 @@ async function load(id) {
   coverBroken.value = false
   try {
     book.value = await api(`/api/books/${id}`)
-    document.title = `${book.value.title}｜書店`
+    document.title = `${book.value.title}｜拾頁`
   } catch (e) {
     error.value = e.message || '找不到這本書'
   } finally {

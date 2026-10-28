@@ -12,7 +12,9 @@ const { message } = useToast()
 <template>
   <header id="top" class="topbar">
     <div class="topbar-inner">
-      <RouterLink to="/" class="brand">書店</RouterLink>
+      <RouterLink to="/" class="brand">
+        <img src="/wordmark.png" alt="拾頁" />
+      </RouterLink>
       <nav class="nav">
         <RouterLink to="/cart">
           購物車
@@ -64,21 +66,19 @@ const { message } = useToast()
 }
 
 .brand {
-  padding: 0.15rem 0.75rem;
-  border-radius: 12px;
-  background: #f6d5cc;
-  color: #8d3d2c;
-  font-family: var(--font-serif);
-  font-size: 1.7rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  transition: all var(--transition-base);
+  display: block;
+  line-height: 0;
+  transition: opacity var(--transition-base);
+}
+
+.brand img {
+  display: block;
+  height: 2.55rem;
+  width: auto;
 }
 
 .brand:hover {
-  background: #f3c5b8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(141, 61, 44, 0.15);
+  opacity: 0.72;
 }
 
 .nav {

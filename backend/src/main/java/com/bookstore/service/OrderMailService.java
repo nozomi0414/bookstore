@@ -33,7 +33,7 @@ public class OrderMailService {
 			MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
 			helper.setFrom(from);
 			helper.setTo(order.getUser().getEmail());
-			helper.setSubject("書店訂單 #" + order.getId() + " 已成立");
+			helper.setSubject("拾頁訂單 #" + order.getId() + " 已成立");
 			helper.setText(body(order));
 			sender.send(message);
 			return true;
