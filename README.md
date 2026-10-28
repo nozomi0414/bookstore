@@ -13,6 +13,9 @@
   <img src="https://img.shields.io/badge/PostgreSQL-bookstore-336791" alt="PostgreSQL">
 </p>
 
+<p align="center">
+  <img width="2533" height="1188" alt="image" src="https://github.com/user-attachments/assets/87ff1ee2-e21f-4478-9894-d88948510f9e" />
+</p>
 ## 功能
 
 - 書架可依分類篩選、搜尋書名或作者，點書名開啟可分享的書籍頁。
